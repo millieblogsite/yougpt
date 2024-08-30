@@ -155,6 +155,7 @@ function keyPressed() {
         var audio = new Audio("audio/background.mp3");
         audio.loop = true; //loop
         audio.play(); //play
+        playingbackground = true;
     }
     if (gameState === 'guessing') {
         if (key >= '1' && key <= '6') {
