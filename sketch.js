@@ -66,9 +66,7 @@ function setup() {
     textAlign(LEFT, TOP);
     textSize(16);
     preload();
-    var audio = new Audio("audio/background.mp3");
-    audio.loop = true; //loop
-    audio.play(); //play
+    
 }
 
 function draw() {
@@ -150,7 +148,13 @@ function displayPreviousTokens() {
     }
 }
 
+var playingbackground = false;
 function keyPressed() {
+    if (playingbackground!=true) {
+        var audio = new Audio("audio/background.mp3");
+        audio.loop = true; //loop
+        audio.play(); //play
+    }
     if (gameState === 'guessing') {
         if (key >= '1' && key <= '6') {
             userGuess += key;
