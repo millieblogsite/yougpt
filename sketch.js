@@ -141,7 +141,7 @@ function keyPressed() {
         playingbackground = true;
     }
     if (gameState === 'guessing') {
-        if (key >= '1' && key <= '6') {
+        if (key >= '0' && key <= '9') {
             userGuess += key;
         } else if (keyCode === BACKSPACE) {
             userGuess = userGuess.slice(0, -1);
