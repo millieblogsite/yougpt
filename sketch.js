@@ -77,7 +77,7 @@ function draw() {
         text(`Components: ${currentToken.components.slice(0, depth).join(', ')}`, 20, 330);
 
         // Display user's guess
-        text(`Your guess: ${userGuess}`, 20, 380);
+        text(`Your guess for next token components: ${userGuess}`, 20, 380);
 
         // Display instructions
         text("Type numbers 1-8 and press Enter to submit", 20, height - 50);
