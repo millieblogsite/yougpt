@@ -66,9 +66,8 @@ function setup() {
     textAlign(LEFT, TOP);
     textSize(16);
     preload();
-    background_audio = loadAudio('audio/background.mp3');
-    background_audio.setLoop(true);
-    background_audio.play();
+    var background_audio = loadAudio('audio/background.mp3');
+    background_audio.loop();
 }
 
 function draw() {
