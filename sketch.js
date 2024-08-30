@@ -37,6 +37,7 @@ function preload() {
     for (let i = 0; i <= 10; i++) {
         loadAudio(`audio/feedback${i}.mp3`, i);
     }
+
 }
 
 function loadAudio(url, index) {
@@ -65,6 +66,8 @@ function setup() {
     textAlign(LEFT, TOP);
     textSize(16);
     preload();
+    background_audio = loadAudio('audio/background.mp3');
+    background_audio.loop();
 }
 
 function draw() {
