@@ -1,7 +1,7 @@
 var tokenList = tokenLists[Math.floor(Math.random()*tokenLists.length)];
 
 let currentTokenIndex = 0;
-let depth = 4;
+let depth = 8;
 let score = 0;
 let totalScore = 0;
 let userGuess = '';
