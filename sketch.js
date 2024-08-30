@@ -512,7 +512,7 @@ function draw() {
         text(`Your guess: ${userGuess}`, 20, 380);
 
         // Display instructions
-        text("Type numbers 1-6 and press Enter to submit", 20, height - 50);
+        text("Type numbers 1-8 and press Enter to submit", 20, height - 50);
 
         if (gameState === 'feedback') {
             // Display feedback
@@ -527,7 +527,7 @@ function draw() {
         textSize(32);
         text("Game Over!", width / 2 - 80, height / 2 - 50);
         textSize(24);
-        text(`Final Score: ${totalScore}`, width / 2 - 60, height / 2 + 50);
+        text(`Final Score: ${totalScore}`, width / 2 - 60, height / 2 + 50, '/', depth * tokenList.length);
         textSize(16);
         text("Press any key to restart", width / 2 - 80, height - 50);
     }
@@ -636,4 +636,6 @@ function restartGame() {
     totalScore = 0;
     userGuess = '';
     gameState = 'guessing';
+    var tokenList = tokenLists[Math.floor(Math.random()*tokenLists.length)];
+
 }
