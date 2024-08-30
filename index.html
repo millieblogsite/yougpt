@@ -74,14 +74,14 @@
                 for (let i = 0; i <= currentTokenIndex; i++) {
                     const token = tokenList[i];
                     const tokenElement = document.createElement('div');
-                    tokenElement.textContent = `${token.components.slice(0, depth).join(', ')} : ${token.token}`;
+                    tokenElement.textContent = `${token.components.slice(0, depth).join(', ')} : ${token.token.replace('â–', '_')}`;
                     previousTokensElement.appendChild(tokenElement);
                 }
             } else {
                 for (let i = currentTokenIndex - 8; i <= currentTokenIndex; i++) {
                     const token = tokenList[i];
                     const tokenElement = document.createElement('div');
-                    tokenElement.textContent = `${token.components.slice(0, depth).join(', ')} : ${token.token}`;
+                    tokenElement.textContent = `${token.components.slice(0, depth).join(', ')} : ${token.token.replace('â–', '_')}`;
                     previousTokensElement.appendChild(tokenElement);
                 }
             }
@@ -96,7 +96,7 @@
 
                 displayPreviousTokens();
 
-                currentTokenElement.textContent = `Current token: ${currentToken.token}`;
+                currentTokenElement.textContent = `Current token: ${currentToken.token.replace('â–', '_')}`;
                 currentTokenElement.textContent += `\nComponents: ${currentToken.components.slice(0, depth).join(', ')}`;
 
                 userGuessElement.textContent = `Your guess for next token components: ${userGuess}`;
@@ -124,7 +124,7 @@
             const nextToken = tokenList[currentTokenIndex + 1];
             const correctComponents = nextToken.components.slice(0, depth);
             const userGuessArray = userGuess.split('').map(Number);
-
+            userInputElement.value = '';
             score = 0;
             let totalError = 0;
 
