@@ -24,7 +24,8 @@ let score = 0;
 let totalScore = 0;
 let userGuess = '';
 let gameState = 'guessing'; // 'guessing', 'feedback', 'gameOver'
-
+let fontcolor = 'white';
+let backgroundColor = 'black';
 let audioFiles = [];
 
 let audioContext;
@@ -70,10 +71,10 @@ function setup() {
 }
 
 function draw() {
-    background(220);
+    background(backgroundColor);
 
     // Display total score in top right
-    fill(0);
+    fill(fontcolor);
     textAlign(RIGHT, TOP);
     textSize(24);
     text(`Total Score: ${totalScore}`, width - 20, 20);
@@ -88,7 +89,7 @@ function draw() {
         displayPreviousTokens();
 
         // Display current token and its components
-        fill(0);
+        fill(fontcolor);
         text(`Current token: ${currentToken.token}`, 20, 300);
         text(`Components: ${currentToken.components.slice(0, depth).join(', ')}`, 20, 330);
 
@@ -107,7 +108,7 @@ function draw() {
         }
     } else if (gameState === 'gameOver') {
         // Display game over screen
-        fill(0);
+        fill(fontcolor);
         textSize(32);
         text("Game Over!", width / 2 - 80, height / 2 - 50);
         textSize(24);
@@ -123,7 +124,7 @@ function displayPreviousTokens() {
     if (currentTokenIndex<8) {
         for (let i = 0; i <= currentTokenIndex; i++) {
             const token = tokenList[i];
-            fill(0);
+            fill(fontcolor);
             text(`${token.components.slice(0, depth).join(', ')} : ${token.token}`, 20, y);
             y += lineHeight;
 
@@ -136,7 +137,7 @@ function displayPreviousTokens() {
     else {
         for (let i = currentTokenIndex-8; i <= currentTokenIndex; i++) {
             const token = tokenList[i];
-            fill(0);
+            fill(fontcolor);
             text(`${token.components.slice(0, depth).join(', ')} : ${token.token}`, 20, y);
             y += lineHeight;
 
