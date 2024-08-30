@@ -1,26 +1,204 @@
 <!DOCTYPE html>
-<html lang="en">
+<html>
 <head>
-    <meta charset="UTF-8">
+    <title>Token Guessing Game</title>
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>you-gpt</title>
     <style>
         body {
-            font-family: "Courier New";
+            font-family: 'Courier New', monospace;
+            background-color: black;
             color: green;
-            margin: auto;
-            width: 50%;
-/*             border: 3px solid green; */
-            background: black;
-            padding: 10px;
+            padding: 20px;
+        }
+        #game-container {
+            max-width: 800px;
+            margin: 0 auto;
+        }
+        #previous-tokens, #current-token, #user-guess, #feedback, #game-over {
+            margin-bottom: 20px;
+        }
+        #total-score {
+            text-align: right;
+            font-size: 24px;
+            margin-bottom: 20px;
+        }
+        #instructions {
+            margin-top: 50px;
+        }
+        #user-input {
+            display: none;
         }
     </style>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/p5.js/1.10.0/p5.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/p5.js/1.10.0/addons/p5.sound.js"></script>
-    <script src="tokens.js"></script>
-    <script src="sketch.js"></script>
 </head>
 <body>
-    <h1>You-GPT D8</h1>
+    <div id="game-container">
+        <div id="total-score"></div>
+        <div id="previous-tokens"></div>
+        <div id="current-token"></div>
+        <div id="user-guess"></div>
+        <div id="user-input-container">
+            <input type="text" id="user-input" inputmode="numeric" maxlength="8">
+        </div>
+        <div id="feedback"></div>
+        <div id="game-over" style="display: none;">
+            <h2>Game Over!</h2>
+            <p id="final-score"></p>
+            <p>Press any key to restart</p>
+        </div>
+        <div id="instructions">Type numbers 1-8 and press Enter to submit</div>
+    </div>
+    <script src="nurseryrhymes.js"></script>
+    <script>
+        var tokenList = tokenLists[Math.floor(Math.random()*tokenLists.length)];
+
+        let currentTokenIndex = 0;
+        let depth = 5;
+        let score = 0;
+        let totalScore = 0;
+        let userGuess = '';
+        let gameState = 'guessing'; // 'guessing', 'feedback', 'gameOver'
+
+        const totalScoreElement = document.getElementById('total-score');
+        const previousTokensElement = document.getElementById('previous-tokens');
+        const currentTokenElement = document.getElementById('current-token');
+        const userGuessElement = document.getElementById('user-guess');
+        const feedbackElement = document.getElementById('feedback');
+        const gameOverElement = document.getElementById('game-over');
+        const finalScoreElement = document.getElementById('final-score');
+        const instructionsElement = document.getElementById('instructions');
+        const userInputElement = document.getElementById('user-input');
+
+        function displayPreviousTokens() {
+            previousTokensElement.innerHTML = '';
+            if (currentTokenIndex < 8) {
+                for (let i = 0; i <= currentTokenIndex; i++) {
+                    const token = tokenList[i];
+                    const tokenElement = document.createElement('div');
+                    tokenElement.textContent = `${token.components.slice(0, depth).join(', ')} : ${token.token}`;
+                    previousTokensElement.appendChild(tokenElement);
+                }
+            } else {
+                for (let i = currentTokenIndex - 8; i <= currentTokenIndex; i++) {
+                    const token = tokenList[i];
+                    const tokenElement = document.createElement('div');
+                    tokenElement.textContent = `${token.components.slice(0, depth).join(', ')} : ${token.token}`;
+                    previousTokensElement.appendChild(tokenElement);
+                }
+            }
+        }
+
+        function updateDisplay() {
+            totalScoreElement.textContent = `Total Score: ${totalScore}`;
+
+            if (gameState === 'guessing' || gameState === 'feedback') {
+                const currentToken = tokenList[currentTokenIndex];
+                const nextToken = tokenList[currentTokenIndex + 1];
+
+                displayPreviousTokens();
+
+                currentTokenElement.textContent = `Current token: ${currentToken.token}`;
+                currentTokenElement.textContent += `\nComponents: ${currentToken.components.slice(0, depth).join(', ')}`;
+
+                userGuessElement.textContent = `Your guess for next token components: ${userGuess}`;
+
+                if (gameState === 'guessing') {
+                    userInputElement.style.display = 'block';
+                    userInputElement.focus();
+                    instructionsElement.textContent = "Type numbers 1-8 and press Enter to submit";
+                } else if (gameState === 'feedback') {
+                    const correctComponents = nextToken.components.slice(0, depth);
+                    // feedbackElement.innerHTML = `Correct components: ${correctComponents.join(', ')}<br>Round Score: ${score}`;
+                    // feedbackElement.innerHTML = `Round Score: ${score}`;
+                    userInputElement.style.display = 'none';
+                    instructionsElement.textContent = "Press any key to continue";
+                }
+            } else if (gameState === 'gameOver') {
+                gameOverElement.style.display = 'block';
+                finalScoreElement.textContent = `Final Score: ${totalScore} / ${depth * tokenList.length}`;
+                userInputElement.style.display = 'none';
+                instructionsElement.textContent = "Press any key to restart";
+            }
+        }
+
+        function checkGuess() {
+            const nextToken = tokenList[currentTokenIndex + 1];
+            const correctComponents = nextToken.components.slice(0, depth);
+            const userGuessArray = userGuess.split('').map(Number);
+
+            score = 0;
+            let totalError = 0;
+
+            for (let i = 0; i < depth; i++) {
+                if (userGuessArray[i] === correctComponents[i]) {
+                    score++;
+                }
+                totalError += Math.abs(userGuessArray[i] - correctComponents[i]);
+            }
+
+            const mae = totalError / depth;
+            totalScore += score;
+
+            let audioIndex;
+            if (mae === 0) {
+                audioIndex = 0;
+            } else {
+                audioIndex = Math.min(Math.ceil(mae * 2), 10);
+            }
+
+            playAudio(audioIndex);
+
+            gameState = 'feedback';
+            updateDisplay();
+        }
+
+        function nextToken() {
+            currentTokenIndex++;
+            userGuess = '';
+            if (currentTokenIndex >= tokenList.length - 1) {
+                gameState = 'gameOver';
+            } else {
+                gameState = 'guessing';
+            }
+            updateDisplay();
+        }
+
+        function restartGame() {
+            currentTokenIndex = 0;
+            score = 0;
+            totalScore = 0;
+            userGuess = '';
+            gameState = 'guessing';
+            tokenList = tokenLists[Math.floor(Math.random()*tokenLists.length)];
+            gameOverElement.style.display = 'none';
+            updateDisplay();
+        }
+
+        function playAudio(index) {
+            const audio = new Audio(`audio/feedback${index}.mp3`);
+            audio.play();
+        }
+
+        userInputElement.addEventListener('input', function(event) {
+            userGuess = event.target.value;
+            updateDisplay();
+        });
+
+        userInputElement.addEventListener('keydown', function(event) {
+            if (event.key === 'Enter' && userGuess.length === depth) {
+                checkGuess();
+                userInputElement.style.display = 'none';
+            }
+        });
+
+        document.addEventListener('keydown', function(event) {
+            if (gameState === 'feedback') {
+                nextToken();
+            } else if (gameState === 'gameOver') {
+                restartGame();
+            }
+        });
+
+        updateDisplay();
+    </script>
 </body>
 </html>
