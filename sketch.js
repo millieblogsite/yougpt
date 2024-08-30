@@ -118,16 +118,30 @@ function draw() {
 function displayPreviousTokens() {
     const lineHeight = 25;
     let y = 20;
-    
-    for (let i = 0; i <= currentTokenIndex; i++) {
-        const token = tokenList[i];
-        fill(0);
-        text(`${token.components.slice(0, depth).join(', ')} : ${token.token}`, 20, y);
-        y += lineHeight;
+    if (currentTokenIndex<8) {
+        for (let i = 0; i <= currentTokenIndex; i++) {
+            const token = tokenList[i];
+            fill(0);
+            text(`${token.components.slice(0, depth).join(', ')} : ${token.token}`, 20, y);
+            y += lineHeight;
 
-        if (y > 280) {  // Prevent overflow
-            text("...", 20, y);
-            break;
+            if (y > 280) {  // Prevent overflow
+                text("...", 20, y);
+                break;
+            }
+        }
+    }
+    else {
+        for (let i = currentTokenIndex-8; i <= currentTokenIndex; i++) {
+            const token = tokenList[i];
+            fill(0);
+            text(`${token.components.slice(0, depth).join(', ')} : ${token.token}`, 20, y);
+            y += lineHeight;
+
+            if (y > 280) {  // Prevent overflow
+                text("...", 20, y);
+                break;
+            }
         }
     }
 }
