@@ -132,14 +132,14 @@ function displayPreviousTokens() {
     }
 }
 
-var playingbackground = false;
+// var playingbackground = false;
 function keyPressed() {
-    if (playingbackground!=true) {
-        var audio = new Audio("audio/background.mp3");
-        audio.loop = true; //loop
-        audio.play(); //play
-        playingbackground = true;
-    }
+    // if (playingbackground!=true) {
+    //     var audio = new Audio("audio/background.mp3");
+        // audio.loop = true; //loop
+        // audio.play(); //play
+        // playingbackground = true;
+    // }
     if (gameState === 'guessing') {
         if (key >= '1' && key <= '6') {
             userGuess += key;
