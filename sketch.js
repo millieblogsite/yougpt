@@ -20,7 +20,6 @@ function preload() {
     for (let i = 0; i <= 10; i++) {
         loadAudio(`audio/feedback${i}.mp3`, i);
     }
-
 }
 
 function loadAudio(url, index) {
@@ -45,12 +44,14 @@ function playAudio(index) {
 }
 
 function setup() {
-    createCanvas(800, 600);
+    createCanvas(windowWidth, windowHeight);
     textAlign(LEFT, TOP);
     textSize(16);
     textFont('Courier New');
     preload();
     
+    // Create buttons for mobile input
+    createMobileButtons();
 }
 
 function draw() {
@@ -73,21 +74,18 @@ function draw() {
 
         // Display current token and its components
         fill(fontcolor);
-        text(`Current token: ${currentToken.token}`, 20, 300);
-        text(`Components: ${currentToken.components.slice(0, depth).join(', ')}`, 20, 330);
+        text(`Current token: ${currentToken.token}`, 20, height * 0.5);
+        text(`Components: ${currentToken.components.slice(0, depth).join(', ')}`, 20, height * 0.55);
 
         // Display user's guess
-        text(`Your guess for next token components: ${userGuess}`, 20, 380);
-
-        // Display instructions
-        text("Type numbers 1-8 and press Enter to submit", 20, height - 50);
+        text(`Your guess: ${userGuess}`, 20, height * 0.65);
 
         if (gameState === 'feedback') {
             // Display feedback
             const correctComponents = nextToken.components.slice(0, depth);
-            text(`Correct components: ${correctComponents.join(', ')}`, 20, 420);
-            text(`Round Score: ${score}`, 20, 450);
-            text("Press any key to continue", 20, 480);
+            text(`Correct: ${correctComponents.join(', ')}`, 20, height * 0.7);
+            text(`Round Score: ${score}`, 20, height * 0.75);
+            text("Tap to continue", 20, height * 0.8);
         }
     } else if (gameState === 'gameOver') {
         // Display game over screen
@@ -95,57 +93,66 @@ function draw() {
         textSize(32);
         text("Game Over!", width / 2 - 80, height / 2 - 50);
         textSize(24);
-        text(`Final Score: ${totalScore}`, width / 2 - 60, height / 2 + 50, '/', depth * tokenList.length);
+        text(`Final Score: ${totalScore}`, width / 2 - 60, height / 2 + 50);
         textSize(16);
-        text("Press any key to restart", width / 2 - 80, height - 50);
+        text("Tap to restart", width / 2 - 80, height - 50);
     }
 }
 
 function displayPreviousTokens() {
-    const lineHeight = 25;
+    const lineHeight = height * 0.04;
     let y = 20;
-    if (currentTokenIndex<8) {
-        for (let i = 0; i <= currentTokenIndex; i++) {
-            const token = tokenList[i];
-            fill(fontcolor);
-            text(`${token.components.slice(0, depth).join(', ')} : ${token.token}`, 20, y);
-            y += lineHeight;
+    const maxTokens = Math.floor((height * 0.4) / lineHeight);
+    const startIndex = Math.max(0, currentTokenIndex - maxTokens + 1);
 
-            if (y > 280) {  // Prevent overflow
-                text("...", 20, y);
-                break;
-            }
-        }
-    }
-    else {
-        for (let i = currentTokenIndex-8; i <= currentTokenIndex; i++) {
-            const token = tokenList[i];
-            fill(fontcolor);
-            text(`${token.components.slice(0, depth).join(', ')} : ${token.token}`, 20, y);
-            y += lineHeight;
+    for (let i = startIndex; i <= currentTokenIndex; i++) {
+        const token = tokenList[i];
+        fill(fontcolor);
+        text(`${token.components.slice(0, depth).join(', ')} : ${token.token}`, 20, y);
+        y += lineHeight;
 
-            if (y > 280) {  // Prevent overflow
-                text("...", 20, y);
-                break;
-            }
+        if (y > height * 0.45) {  // Prevent overflow
+            text("...", 20, y);
+            break;
         }
     }
 }
 
-var playingbackground = false;
-function keyPressed() {
-    if (playingbackground!=true) {
-        var audio = new Audio("audio/background.mp3");
-        audio.loop = true; //loop
-        audio.play(); //play
-        playingbackground = true;
+function createMobileButtons() {
+    const buttonSize = width * 0.15;
+    const spacing = width * 0.02;
+    const startY = height * 0.85;
+
+    for (let i = 1; i <= 8; i++) {
+        let x = (i - 1) % 4 * (buttonSize + spacing) + spacing;
+        let y = startY + Math.floor((i - 1) / 4) * (buttonSize + spacing);
+        
+        let button = createButton(i.toString());
+        button.position(x, y);
+        button.size(buttonSize, buttonSize);
+        button.mousePressed(() => handleButtonPress(i.toString()));
     }
+
+    let enterButton = createButton('Enter');
+    enterButton.position(spacing, startY + 2 * (buttonSize + spacing));
+    enterButton.size(2 * buttonSize + spacing, buttonSize);
+    enterButton.mousePressed(() => handleButtonPress('Enter'));
+
+    let backspaceButton = createButton('←');
+    backspaceButton.position(2 * (buttonSize + spacing) + spacing, startY + 2 * (buttonSize + spacing));
+    backspaceButton.size(2 * buttonSize + spacing, buttonSize);
+    backspaceButton.mousePressed(() => handleButtonPress('Backspace'));
+}
+
+function handleButtonPress(key) {
     if (gameState === 'guessing') {
-        if (key >= '0' && key <= '9') {
-            userGuess += key;
-        } else if (keyCode === BACKSPACE) {
+        if (key >= '1' && key <= '8') {
+            if (userGuess.length < depth) {
+                userGuess += key;
+            }
+        } else if (key === 'Backspace') {
             userGuess = userGuess.slice(0, -1);
-        } else if (keyCode === ENTER && userGuess.length === depth) {
+        } else if (key === 'Enter' && userGuess.length === depth) {
             checkGuess();
         }
     } else if (gameState === 'feedback') {
@@ -153,6 +160,30 @@ function keyPressed() {
     } else if (gameState === 'gameOver') {
         restartGame();
     }
+}
+
+function mousePressed() {
+    if (gameState === 'feedback' || gameState === 'gameOver') {
+        handleButtonPress('Enter');
+    }
+}
+
+var playingbackground = false;
+function touchStarted() {
+    if (!playingbackground) {
+        var audio = new Audio("audio/background.mp3");
+        audio.loop = true;
+        audio.play();
+        playingbackground = true;
+    }
+    return false;
+}
+
+function windowResized() {
+    resizeCanvas(windowWidth, windowHeight);
+    // Remove old buttons and create new ones
+    removeElements();
+    createMobileButtons();
 }
 
 function checkGuess() {
