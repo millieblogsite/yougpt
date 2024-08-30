@@ -43,16 +43,50 @@ function playAudio(index) {
     }
 }
 
+let isMobile;
+let canvas;
+let buttons = [];
+
 function setup() {
-    createCanvas(windowWidth, windowHeight);
+    isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
+    canvas = createCanvas(windowWidth, windowHeight);
+    canvas.style('display', 'block'); // Removes scrollbars
     textAlign(LEFT, TOP);
     textSize(16);
     textFont('Courier New');
     preload();
     
-    // Create buttons for mobile input
     createMobileButtons();
+    windowResized(); // Call this to set initial sizes
 }
+
+function createMobileButtons() {
+    buttons = [];
+    const buttonSize = min(width, height) * 0.1;
+    const spacing = buttonSize * 0.2;
+    const startY = height * 0.7;
+
+    for (let i = 1; i <= 8; i++) {
+        let x = (i - 1) % 4 * (buttonSize + spacing) + spacing;
+        let y = startY + Math.floor((i - 1) / 4) * (buttonSize + spacing);
+        
+        let button = createButton(i.toString());
+        button.style('font-size', `${buttonSize * 0.5}px`);
+        button.mousePressed(() => handleButtonPress(i.toString()));
+        buttons.push({button, x, y, w: buttonSize, h: buttonSize});
+    }
+
+    let enterButton = createButton('Enter');
+    enterButton.style('font-size', `${buttonSize * 0.3}px`);
+    enterButton.mousePressed(() => handleButtonPress('Enter'));
+    buttons.push({button: enterButton, x: spacing, y: startY + 2 * (buttonSize + spacing), w: 2 * buttonSize + spacing, h: buttonSize});
+
+    let backspaceButton = createButton('←');
+    backspaceButton.style('font-size', `${buttonSize * 0.5}px`);
+    backspaceButton.mousePressed(() => handleButtonPress('Backspace'));
+    buttons.push({button: backspaceButton, x: 2 * (buttonSize + spacing) + spacing, y: startY + 2 * (buttonSize + spacing), w: 2 * buttonSize + spacing, h: buttonSize});
+}
+
 
 function draw() {
     background(backgroundColor);
@@ -97,8 +131,42 @@ function draw() {
         textSize(16);
         text("Tap to restart", width / 2 - 80, height - 50);
     }
+    if (isMobile) {
+        drawButtons();
+    }
 }
-
+function drawButtons() {
+    buttons.forEach(({button, x, y, w, h}) => {
+        button.position(x, y);
+        button.size(w, h);
+    });
+}
+function touchStarted() {
+    if (!playingbackground) {
+        var audio = new Audio("audio/background.mp3");
+        audio.loop = true;
+        audio.play();
+        playingbackground = true;
+    }
+    // Prevent default behavior on mobile
+    return false;
+}
+function mousePressed() {
+    if (gameState === 'feedback' || gameState === 'gameOver') {
+        handleButtonPress('Enter');
+    }
+    // Prevent default behavior on mobile
+    return false;
+}
+function windowResized() {
+    resizeCanvas(windowWidth, windowHeight);
+    if (isMobile) {
+        createMobileButtons();
+    } else {
+        buttons.forEach(({button}) => button.remove());
+        buttons = [];
+    }
+}
 function displayPreviousTokens() {
     const lineHeight = height * 0.04;
     let y = 20;
@@ -116,32 +184,6 @@ function displayPreviousTokens() {
             break;
         }
     }
-}
-
-function createMobileButtons() {
-    const buttonSize = width * 0.15;
-    const spacing = width * 0.02;
-    const startY = height * 0.85;
-
-    for (let i = 1; i <= 8; i++) {
-        let x = (i - 1) % 4 * (buttonSize + spacing) + spacing;
-        let y = startY + Math.floor((i - 1) / 4) * (buttonSize + spacing);
-        
-        let button = createButton(i.toString());
-        button.position(x, y);
-        button.size(buttonSize, buttonSize);
-        button.mousePressed(() => handleButtonPress(i.toString()));
-    }
-
-    let enterButton = createButton('Enter');
-    enterButton.position(spacing, startY + 2 * (buttonSize + spacing));
-    enterButton.size(2 * buttonSize + spacing, buttonSize);
-    enterButton.mousePressed(() => handleButtonPress('Enter'));
-
-    let backspaceButton = createButton('←');
-    backspaceButton.position(2 * (buttonSize + spacing) + spacing, startY + 2 * (buttonSize + spacing));
-    backspaceButton.size(2 * buttonSize + spacing, buttonSize);
-    backspaceButton.mousePressed(() => handleButtonPress('Backspace'));
 }
 
 function handleButtonPress(key) {
