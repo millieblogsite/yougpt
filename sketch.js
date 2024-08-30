@@ -20,6 +20,7 @@ function preload() {
     for (let i = 0; i <= 10; i++) {
         loadAudio(`audio/feedback${i}.mp3`, i);
     }
+
 }
 
 function loadAudio(url, index) {
@@ -43,50 +44,14 @@ function playAudio(index) {
     }
 }
 
-let isMobile;
-let canvas;
-let buttons = [];
-
 function setup() {
-    isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
-    canvas = createCanvas(windowWidth, windowHeight);
-    canvas.style('display', 'block'); // Removes scrollbars
+    createCanvas(800, 600);
     textAlign(LEFT, TOP);
     textSize(16);
     textFont('Courier New');
     preload();
     
-    createMobileButtons();
-    windowResized(); // Call this to set initial sizes
 }
-
-function createMobileButtons() {
-    buttons = [];
-    const buttonSize = min(width, height) * 0.1;
-    const spacing = buttonSize * 0.2;
-    const startY = height * 0.7;
-
-    for (let i = 1; i <= 8; i++) {
-        let x = (i - 1) % 4 * (buttonSize + spacing) + spacing;
-        let y = startY + Math.floor((i - 1) / 4) * (buttonSize + spacing);
-        
-        let button = createButton(i.toString());
-        button.style('font-size', `${buttonSize * 0.5}px`);
-        button.mousePressed(() => handleButtonPress(i.toString()));
-        buttons.push({button, x, y, w: buttonSize, h: buttonSize});
-    }
-
-    let enterButton = createButton('Enter');
-    enterButton.style('font-size', `${buttonSize * 0.3}px`);
-    enterButton.mousePressed(() => handleButtonPress('Enter'));
-    buttons.push({button: enterButton, x: spacing, y: startY + 2 * (buttonSize + spacing), w: 2 * buttonSize + spacing, h: buttonSize});
-
-    let backspaceButton = createButton('←');
-    backspaceButton.style('font-size', `${buttonSize * 0.5}px`);
-    backspaceButton.mousePressed(() => handleButtonPress('Backspace'));
-    buttons.push({button: backspaceButton, x: 2 * (buttonSize + spacing) + spacing, y: startY + 2 * (buttonSize + spacing), w: 2 * buttonSize + spacing, h: buttonSize});
-}
-
 
 function draw() {
     background(backgroundColor);
@@ -108,18 +73,21 @@ function draw() {
 
         // Display current token and its components
         fill(fontcolor);
-        text(`Current token: ${currentToken.token}`, 20, height * 0.5);
-        text(`Components: ${currentToken.components.slice(0, depth).join(', ')}`, 20, height * 0.55);
+        text(`Current token: ${currentToken.token}`, 20, 300);
+        text(`Components: ${currentToken.components.slice(0, depth).join(', ')}`, 20, 330);
 
         // Display user's guess
-        text(`Your guess: ${userGuess}`, 20, height * 0.65);
+        text(`Your guess for next token components: ${userGuess}`, 20, 380);
+
+        // Display instructions
+        text("Type numbers 1-8 and press Enter to submit", 20, height - 50);
 
         if (gameState === 'feedback') {
             // Display feedback
             const correctComponents = nextToken.components.slice(0, depth);
-            text(`Correct: ${correctComponents.join(', ')}`, 20, height * 0.7);
-            text(`Round Score: ${score}`, 20, height * 0.75);
-            text("Tap to continue", 20, height * 0.8);
+            text(`Correct components: ${correctComponents.join(', ')}`, 20, 420);
+            text(`Round Score: ${score}`, 20, 450);
+            text("Press any key to continue", 20, 480);
         }
     } else if (gameState === 'gameOver') {
         // Display game over screen
@@ -127,74 +95,57 @@ function draw() {
         textSize(32);
         text("Game Over!", width / 2 - 80, height / 2 - 50);
         textSize(24);
-        text(`Final Score: ${totalScore}`, width / 2 - 60, height / 2 + 50);
+        text(`Final Score: ${totalScore}`, width / 2 - 60, height / 2 + 50, '/', depth * tokenList.length);
         textSize(16);
-        text("Tap to restart", width / 2 - 80, height - 50);
-    }
-    if (isMobile) {
-        drawButtons();
+        text("Press any key to restart", width / 2 - 80, height - 50);
     }
 }
-function drawButtons() {
-    buttons.forEach(({button, x, y, w, h}) => {
-        button.position(x, y);
-        button.size(w, h);
-    });
-}
-function touchStarted() {
-    if (!playingbackground) {
-        var audio = new Audio("audio/background.mp3");
-        audio.loop = true;
-        audio.play();
-        playingbackground = true;
-    }
-    // Prevent default behavior on mobile
-    return false;
-}
-function mousePressed() {
-    if (gameState === 'feedback' || gameState === 'gameOver') {
-        handleButtonPress('Enter');
-    }
-    // Prevent default behavior on mobile
-    return false;
-}
-function windowResized() {
-    resizeCanvas(windowWidth, windowHeight);
-    if (isMobile) {
-        createMobileButtons();
-    } else {
-        buttons.forEach(({button}) => button.remove());
-        buttons = [];
-    }
-}
+
 function displayPreviousTokens() {
-    const lineHeight = height * 0.04;
+    const lineHeight = 25;
     let y = 20;
-    const maxTokens = Math.floor((height * 0.4) / lineHeight);
-    const startIndex = Math.max(0, currentTokenIndex - maxTokens + 1);
+    if (currentTokenIndex<8) {
+        for (let i = 0; i <= currentTokenIndex; i++) {
+            const token = tokenList[i];
+            fill(fontcolor);
+            text(`${token.components.slice(0, depth).join(', ')} : ${token.token}`, 20, y);
+            y += lineHeight;
 
-    for (let i = startIndex; i <= currentTokenIndex; i++) {
-        const token = tokenList[i];
-        fill(fontcolor);
-        text(`${token.components.slice(0, depth).join(', ')} : ${token.token}`, 20, y);
-        y += lineHeight;
+            if (y > 280) {  // Prevent overflow
+                text("...", 20, y);
+                break;
+            }
+        }
+    }
+    else {
+        for (let i = currentTokenIndex-8; i <= currentTokenIndex; i++) {
+            const token = tokenList[i];
+            fill(fontcolor);
+            text(`${token.components.slice(0, depth).join(', ')} : ${token.token}`, 20, y);
+            y += lineHeight;
 
-        if (y > height * 0.45) {  // Prevent overflow
-            text("...", 20, y);
-            break;
+            if (y > 280) {  // Prevent overflow
+                text("...", 20, y);
+                break;
+            }
         }
     }
 }
 
-function handleButtonPress(key) {
+var playingbackground = false;
+function keyPressed() {
+    if (playingbackground!=true) {
+        var audio = new Audio("audio/background.mp3");
+        audio.loop = true; //loop
+        audio.play(); //play
+        playingbackground = true;
+    }
     if (gameState === 'guessing') {
-        if (key >= '1' && key <= '8') {
-            if (userGuess.length < depth) {
-                userGuess += key;
-            }
-        } else if (key === 'Backspace') {
+        if (key >= '0' && key <= '9') {
+            userGuess += key;
+        } else if (keyCode === BACKSPACE) {
             userGuess = userGuess.slice(0, -1);
-        } else if (key === 'Enter' && userGuess.length === depth) {
+        } else if (keyCode === ENTER && userGuess.length === depth) {
             checkGuess();
         }
     } else if (gameState === 'feedback') {
@@ -202,30 +153,6 @@ function handleButtonPress(key) {
     } else if (gameState === 'gameOver') {
         restartGame();
     }
-}
-
-function mousePressed() {
-    if (gameState === 'feedback' || gameState === 'gameOver') {
-        handleButtonPress('Enter');
-    }
-}
-
-var playingbackground = false;
-function touchStarted() {
-    if (!playingbackground) {
-        var audio = new Audio("audio/background.mp3");
-        audio.loop = true;
-        audio.play();
-        playingbackground = true;
-    }
-    return false;
-}
-
-function windowResized() {
-    resizeCanvas(windowWidth, windowHeight);
-    // Remove old buttons and create new ones
-    removeElements();
-    createMobileButtons();
 }
 
 function checkGuess() {
